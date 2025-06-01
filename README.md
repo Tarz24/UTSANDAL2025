@@ -28,7 +28,7 @@ ui_faculty-finder/
 ├── search/                   # Modul Search Engine
 │   ├── indexer.py           # Indexing untuk pencarian
 │   └── search_engine.py     # Logic pencarian data
-├── data/                     # Folder Database
+└── data/                     # Folder Database
     └── ui_faculty.db        # Database SQLite
 
 ```
