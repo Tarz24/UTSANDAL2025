@@ -1,0 +1,692 @@
+{% extends "base.html" %}
+
+{% block title %}{{ faculty.name or 'Detail Fakultas' }} - UI Faculty Finder{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('index') }}">Beranda</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('search') }}">Pencarian</a>
+            </li>
+            {% if faculty.breadcrumb %}
+                {% for crumb in faculty.breadcrumb[:-1] %}
+                <li class="breadcrumb-item">{{ crumb }}</li>
+                {% endfor %}
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ faculty.name or 'Detail Fakultas' }}
+            </li>
+        </ol>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Faculty Header -->
+<section class="faculty-header bg-gradient-primary text-white rounded-3 p-4 mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center mb-3">
+                <div class="faculty-icon me-3" aria-hidden="true">
+                    <i class="fas fa-university fa-3x"></i>
+                </div>
+                <div>
+                    <h1 class="h2 mb-1">{{ faculty.name or 'Nama Fakultas Tidak Tersedia' }}</h1>
+                    <div class="faculty-meta">
+                        <span class="badge bg-light text-dark me-2">
+                            {{ faculty.faculty_type|title if faculty.faculty_type else 'Fakultas' }}
+                        </span>
+                        {% if faculty.established_year %}
+                        <span class="badge bg-light text-dark me-2">
+                            <i class="fas fa-calendar me-1" aria-hidden="true"></i>
+                            Est. {{ faculty.established_year }}
+                        </span>
+                        {% endif %}
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-clock me-1" aria-hidden="true"></i>
+                            Update {{ faculty.last_updated.strftime('%d %b %Y') if faculty.last_updated else 'N/A' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            {% if faculty.description %}
+            <p class="lead mb-0">{{ faculty.description }}</p>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4 text-end">
+            <div class="faculty-actions">
+                {% if faculty.url %}
+                <a href="{{ faculty.url }}" target="_blank" rel="noopener noreferrer" 
+                   class="btn btn-light btn-lg mb-2">
+                    <i class="fas fa-external-link-alt me-2" aria-hidden="true"></i>
+                    Kunjungi Website
+                </a>
+                {% endif %}
+                <div class="share-buttons">
+                    <button type="button" class="btn btn-outline-light btn-sm me-2" onclick="shareURL()">
+                        <i class="fas fa-share-alt me-1" aria-hidden="true"></i>
+                        Bagikan
+                    </button>
+                    <button type="button" class="btn btn-outline-light btn-sm" onclick="printPage()">
+                        <i class="fas fa-print me-1" aria-hidden="true"></i>
+                        Cetak
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Faculty Content -->
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Overview Section -->
+        {% if faculty.description or faculty.vision or faculty.mission or faculty.history %}
+        <section class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title h5 mb-0">
+                    <i class="fas fa-info-circle me-2" aria-hidden="true"></i>
+                    Informasi Umum
+                </h2>
+            </div>
+            <div class="card-body">
+                {% if faculty.description %}
+                <div class="description mb-4">
+                    <h3 class="h6 text-primary mb-2">Deskripsi</h3>
+                    <p class="text-muted">{{ faculty.description }}</p>
+                </div>
+                {% endif %}
+                
+                {% if faculty.vision %}
+                <div class="vision mb-3">
+                    <h3 class="h6 text-primary mb-2">Visi</h3>
+                    <p class="text-muted">{{ faculty.vision }}</p>
+                </div>
+                {% endif %}
+                
+                {% if faculty.mission %}
+                <div class="mission mb-3">
+                    <h3 class="h6 text-primary mb-2">Misi</h3>
+                    {% if faculty.mission is string %}
+                        <p class="text-muted">{{ faculty.mission }}</p>
+                    {% else %}
+                        <ul class="text-muted">
+                            {% for mission_item in faculty.mission %}
+                            <li>{{ mission_item }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% if faculty.history %}
+                <div class="history">
+                    <h3 class="h6 text-primary mb-2">Sejarah</h3>
+                    <p class="text-muted">{{ faculty.history }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Programs Section -->
+        {% if faculty.programs %}
+        <section class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h2 class="card-title h5 mb-0">
+                    <i class="fas fa-graduation-cap me-2" aria-hidden="true"></i>
+                    Program Studi ({{ faculty.programs|length }})
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for program in faculty.programs %}
+                    <div class="col-md-6 mb-3">
+                        <article class="program-item p-3 border rounded h-100">
+                            <h3 class="h6 mb-2">
+                                <i class="fas fa-book me-2 text-success" aria-hidden="true"></i>
+                                {{ program.name if program is mapping else program }}
+                            </h3>
+                            {% if program is mapping %}
+                                {% if program.get('degree') %}
+                                <span class="badge bg-light text-dark mb-2">{{ program.degree }}</span>
+                                {% endif %}
+                                {% if program.get('description') %}
+                                <p class="small text-muted mb-1">{{ program.description }}</p>
+                                {% endif %}
+                                {% if program.get('accreditation') %}
+                                <small class="text-muted">
+                                    <i class="fas fa-certificate me-1" aria-hidden="true"></i>
+                                    Akreditasi: {{ program.accreditation }}
+                                </small>
+                                {% endif %}
+                            {% endif %}
+                        </article>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Departments Section -->
+        {% if faculty.departments %}
+        <section class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h2 class="card-title h5 mb-0">
+                    <i class="fas fa-building me-2" aria-hidden="true"></i>
+                    Departemen ({{ faculty.departments|length }})
+                </h2>
+            </div>
+            <div class="card-body">
+                {% for dept in faculty.departments %}
+                <article class="department-item p-3 border-start border-info border-3 mb-3">
+                    <h3 class="h6 mb-2">
+                        <i class="fas fa-sitemap me-2 text-info" aria-hidden="true"></i>
+                        {{ dept.name if dept is mapping else dept }}
+                    </h3>
+                    {% if dept is mapping %}
+                        {% if dept.get('head') %}
+                        <p class="mb-1">
+                            <strong>Ketua Departemen:</strong> {{ dept.head }}
+                        </p>
+                        {% endif %}
+                        {% if dept.get('description') %}
+                        <p class="text-muted small mb-0">{{ dept.description }}</p>
+                        {% endif %}
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Research Areas Section -->
+        {% if faculty.research_areas %}
+        <section class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h2 class="card-title h5 mb-0">
+                    <i class="fas fa-flask me-2" aria-hidden="true"></i>
+                    Bidang Penelitian
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for area in faculty.research_areas %}
+                    <div class="col-md-6 mb-2">
+                        <div class="research-item">
+                            <i class="fas fa-microscope me-2 text-warning" aria-hidden="true"></i>
+                            {{ area }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Navigation Path Section -->
+        {% if faculty.breadcrumb %}
+        <section class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h2 class="card-title h5 mb-0">
+                    <i class="fas fa-route me-2" aria-hidden="true"></i>
+                    Jalur Navigasi Website
+                </h2>
+            </div>
+            <div class="card-body">
+                <nav class="navigation-path" aria-label="Website navigation path">
+                    {% for crumb in faculty.breadcrumb %}
+                    <span class="nav-crumb d-block mb-1">
+                        <i class="fas fa-chevron-right me-2 text-muted" aria-hidden="true"></i>
+                        {{ crumb }}
+                    </span>
+                    {% endfor %}
+                </nav>
+            </div>
+        </section>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="col-lg-4">
+        <!-- Contact Information -->
+        {% if faculty.contact %}
+        <section class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h2 class="card-title h5 mb-0">
+                    <i class="fas fa-address-card me-2" aria-hidden="true"></i>
+                    Informasi Kontak
+                </h2>
+            </div>
+            <div class="card-body">
+                {% if faculty.contact.get('address') %}
+                <div class="contact-item mb-3">
+                    <h3 class="h6 text-primary mb-1">
+                        <i class="fas fa-map-marker-alt me-2" aria-hidden="true"></i>
+                        Alamat
+                    </h3>
+                    <address class="small text-muted mb-0">{{ faculty.contact.address }}</address>
+                </div>
+                {% endif %}
+                
+                {% if faculty.contact.get('phone') %}
+                <div class="contact-item mb-3">
+                    <h3 class="h6 text-primary mb-1">
+                        <i class="fas fa-phone me-2" aria-hidden="true"></i>
+                        Telepon
+                    </h3>
+                    <p class="small mb-0">
+                        <a href="tel:{{ faculty.contact.phone }}" class="text-decoration-none">
+                            {{ faculty.contact.phone }}
+                        </a>
+                    </p>
+                </div>
+                {% endif %}
+                
+                {% if faculty.contact.get('email') %}
+                <div class="contact-item mb-3">
+                    <h3 class="h6 text-primary mb-1">
+                        <i class="fas fa-envelope me-2" aria-hidden="true"></i>
+                        Email
+                    </h3>
+                    <p class="small mb-0">
+                        <a href="mailto:{{ faculty.contact.email }}" class="text-decoration-none">
+                            {{ faculty.contact.email }}
+                        </a>
+                    </p>
+                </div>
+                {% endif %}
+                
+                {% if faculty.contact.get('website') %}
+                <div class="contact-item">
+                    <h3 class="h6 text-primary mb-1">
+                        <i class="fas fa-globe me-2" aria-hidden="true"></i>
+                        Website
+                    </h3>
+                    <p class="small mb-0">
+                        <a href="{{ faculty.contact.website }}" target="_blank" rel="noopener noreferrer" 
+                           class="text-decoration-none">
+                            {{ faculty.contact.website }}
+                        </a>
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Quick Stats -->
+        <section class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h2 class="card-title h5 mb-0">
+                    <i class="fas fa-chart-bar me-2" aria-hidden="true"></i>
+                    Statistik Cepat
+                </h2>
+            </div>
+            <div class="card-body">
+                <dl class="mb-0">
+                    <div class="d-flex justify-content-between mb-2">
+                        <dt class="small">
+                            <i class="fas fa-graduation-cap me-2 text-success" aria-hidden="true"></i>
+                            Program Studi
+                        </dt>
+                        <dd class="fw-bold mb-0">{{ faculty.programs|length if faculty.programs else 0 }}</dd>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <dt class="small">
+                            <i class="fas fa-building me-2 text-info" aria-hidden="true"></i>
+                            Departemen
+                        </dt>
+                        <dd class="fw-bold mb-0">{{ faculty.departments|length if faculty.departments else 0 }}</dd>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <dt class="small">
+                            <i class="fas fa-flask me-2 text-warning" aria-hidden="true"></i>
+                            Bidang Penelitian
+                        </dt>
+                        <dd class="fw-bold mb-0">{{ faculty.research_areas|length if faculty.research_areas else 0 }}</dd>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <dt class="small">
+                            <i class="fas fa-calendar me-2 text-primary" aria-hidden="true"></i>
+                            Tahun Berdiri
+                        </dt>
+                        <dd class="fw-bold mb-0">{{ faculty.established_year or 'N/A' }}</dd>
+                    </div>
+                </dl>
+            </div>
+        </section>
+
+        <!-- Related Links -->
+        {% if faculty.related_links %}
+        <section class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h2 class="card-title h5 mb-0">
+                    <i class="fas fa-link me-2" aria-hidden="true"></i>
+                    Tautan Terkait
+                </h2>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    {% for link in faculty.related_links %}
+                    <li class="mb-2">
+                        <a href="{{ link.url if link is mapping else link }}" 
+                           target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                            <i class="fas fa-external-link-alt me-2" aria-hidden="true"></i>
+                            {{ link.title if link is mapping else link }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Search Similar -->
+        <section class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h2 class="card-title h5 mb-0">
+                    <i class="fas fa-search me-2" aria-hidden="true"></i>
+                    Pencarian Serupa
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if faculty.faculty_type %}
+                    <a href="{{ url_for('search', q=faculty.faculty_type) }}" 
+                       class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-university me-2" aria-hidden="true"></i>
+                        {{ faculty.faculty_type|title }} Lainnya
+                    </a>
+                    {% endif %}
+                    
+                    {% if faculty.programs and faculty.programs|length > 0 %}
+                    {% set first_program = faculty.programs[0] %}
+                    <a href="{{ url_for('search', q=first_program.name if first_program is mapping else first_program) }}" 
+                       class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-graduation-cap me-2" aria-hidden="true"></i>
+                        Program Serupa
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('search', q='Universitas Indonesia') }}" 
+                       class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-search me-2" aria-hidden="true"></i>
+                        Semua Fakultas UI
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Actions -->
+        <section class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                <h2 class="card-title h5 mb-0">
+                    <i class="fas fa-tools me-2" aria-hidden="true"></i>
+                    Aksi
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="window.print()">
+                        <i class="fas fa-print me-2" aria-hidden="true"></i>
+                        Cetak Halaman
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="shareURL()">
+                        <i class="fas fa-share-alt me-2" aria-hidden="true"></i>
+                        Bagikan URL
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm" onclick="exportPDF()">
+                        <i class="fas fa-file-pdf me-2" aria-hidden="true"></i>
+                        Export PDF
+                    </button>
+                    <a href="{{ url_for('search') }}" class="btn btn-outline-dark btn-sm">
+                        <i class="fas fa-arrow-left me-2" aria-hidden="true"></i>
+                        Kembali ke Pencarian
+                    </a>
+                </div>
+            </div>
+        </section>
+    </aside>
+</div>
+
+<!-- Similar Faculties Section -->
+{% if similar_faculties %}
+<section class="similar-faculties mt-5">
+    <h2 class="mb-4">
+        <i class="fas fa-university me-2 text-primary" aria-hidden="true"></i>
+        Fakultas Serupa
+    </h2>
+    
+    <div class="row">
+        {% for similar in similar_faculties %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <article class="card similar-card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="card-title h6 mb-2">
+                        <a href="{{ url_for('faculty_detail', faculty_id=similar.id) }}" 
+                           class="text-decoration-none stretched-link">
+                            {{ similar.name }}
+                        </a>
+                    </h3>
+                    <p class="card-text small text-muted mb-3">
+                        {% if similar.description %}
+                            {{ similar.description[:100] }}{% if similar.description|length > 100 %}...{% endif %}
+                        {% else %}
+                            Deskripsi tidak tersedia
+                        {% endif %}
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-light text-dark">
+                            {{ similar.faculty_type|title if similar.faculty_type else 'Fakultas' }}
+                        </span>
+                        <span class="btn btn-outline-primary btn-sm">Detail</span>
+                    </div>
+                </div>
+            </article>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Share functionality
+function shareURL() {
+    if (navigator.share) {
+        navigator.share({
+            title: '{{ faculty.name }} - UI Faculty Finder',
+            text: 'Informasi lengkap tentang {{ faculty.name }}',
+            url: window.location.href
+        }).catch(err => {
+            console.error('Error sharing:', err);
+            fallbackShare();
+        });
+    } else {
+        fallbackShare();
+    }
+}
+
+function fallbackShare() {
+    const url = window.location.href;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            showNotification('URL berhasil disalin ke clipboard!', 'success');
+        }).catch(() => {
+            promptCopyURL(url);
+        });
+    } else {
+        promptCopyURL(url);
+    }
+}
+
+function promptCopyURL(url) {
+    const result = prompt('Salin URL ini:', url);
+    if (result) {
+        showNotification('URL siap untuk dibagikan!', 'info');
+    }
+}
+
+function printPage() {
+    window.print();
+}
+
+function exportPDF() {
+    showNotification('Fitur export PDF akan segera tersedia!', 'info');
+}
+
+function showNotification(message, type = 'info') {
+    // Simple notification system
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    alertDiv.style.zIndex = '9999';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+        }
+    }, 3000);
+}
+
+// Smooth scrolling for internal links
+document.addEventListener('DOMContentLoaded', function() {
+    // Add smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Initialize card animations
+    initializeCardAnimations();
+});
+
+function initializeCardAnimations() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+            }
+        });
+    }, observerOptions);
+
+    document.querySelectorAll('.card').forEach(card => {
+        observer.observe(card);
+    });
+}
+</script>
+
+<style>
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.card.animate-in {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Hover effects */
+.similar-card:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+}
+
+.program-item:hover,
+.department-item:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.3s ease;
+}
+
+/* Print styles */
+@media print {
+    .faculty-actions,
+    .card-header,
+    .similar-faculties,
+    aside {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        margin-bottom: 1rem !important;
+    }
+    
+    .card-body {
+        padding: 1rem !important;
+    }
+    
+    h1, h2, h3 {
+        color: #000 !important;
+    }
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .faculty-header .col-md-4 {
+        text-align: center !important;
+        margin-top: 1rem;
+    }
+    
+    .faculty-actions .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .share-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .share-buttons .btn {
+        flex: 1;
+        width: auto;
+    }
+}
+</style>
+{% endblock %}

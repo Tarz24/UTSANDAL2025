@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if query %}
+        Hasil Pencarian "{{ query }}" - UI Faculty Finder
+    {% else %}
+        Pencarian - UI Faculty Finder
+    {% endif %}
+{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('index') }}">Beranda</a>
+            </li>
+            <li class="breadcrumb-item active">Pencarian</li>
+            {% if query %}
+            <li class="breadcrumb-item active">Hasil untuk "{{ query }}"</li>
+            {% endif %}
+        </ol>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Search Header -->
+<section class="search-header bg-primary text-white rounded-3 p-4 mb-4">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="h3 mb-3">
+                <i class="fas fa-search me-2"></i>
+                {% if query %}
+                    Hasil Pencarian untuk "{{ query }}"
+                {% else %}
+                    Pencarian Fakultas UI
+                {% endif %}
+            </h1>
+            
+            <!-- Advanced Search Form -->
+            <form method="GET" action="{{ url_for('search') }}" class="search-form">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="q" 
+                                   placeholder="Masukkan kata kunci pencarian..." 
+                                   value="{{ query or '' }}" 
+                                   id="searchInput">
+                            <button class="btn btn-light" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <select class="form-select" name="type">
+                            {% set type_options = [
+                                ('', 'Semua Tipe'),
+                                ('faculty', 'Fakultas'),
+                                ('department', 'Departemen'),
+                                ('program', 'Program Studi')
+                            ] %}
+                            {% for value, label in type_options %}
+                            <option value="{{ value }}" 
+                                    {% if filter_type == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <select class="form-select" name="sort">
+                            {% set sort_options = [
+                                ('relevance', 'Relevansi'),
+                                ('name', 'Nama A-Z'),
+                                ('date', 'Terbaru')
+                            ] %}
+                            {% for value, label in sort_options %}
+                            <option value="{{ value }}" 
+                                    {% if sort_by == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="col-md-4 text-end">
+            {% if results %}
+            <div class="search-stats">
+                <div class="h4 mb-1">{{ total_results }}</div>
+                <small>hasil ditemukan dalam {{ search_time }}ms</small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Search Suggestions -->
+{% if not query %}
+<section class="search-suggestions mb-4">
+    <h5 class="mb-3">Pencarian Populer</h5>
+    <div class="d-flex flex-wrap gap-2">
+        {% set popular_searches = [
+            'Fakultas Teknik', 'Fakultas Kedokteran', 'FASILKOM', 'FEB',
+            'FMIPA', 'Fakultas Hukum', 'FIB', 'Fakultas Psikologi'
+        ] %}
+        {% for search_term in popular_searches %}
+        <a href="{{ url_for('search', q=search_term) }}" 
+           class="btn btn-outline-primary btn-sm">
+            {{ search_term }}
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Search Results -->
+{% if query %}
+    {% if results %}
+    <!-- Results Header -->
+    <section class="results-section">
+        <div class="results-header d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="mb-0">{{ total_results }} hasil untuk "{{ query }}"</h5>
+                <small class="text-muted">Halaman {{ page }} dari {{ total_pages }}</small>
+            </div>
+            <div class="view-options">
+                <div class="btn-group btn-group-sm" role="group">
+                    <input type="radio" class="btn-check" name="view" id="listView" checked>
+                    <label class="btn btn-outline-secondary" for="listView">
+                        <i class="fas fa-list"></i>
+                    </label>
+                    <input type="radio" class="btn-check" name="view" id="gridView">
+                    <label class="btn btn-outline-secondary" for="gridView">
+                        <i class="fas fa-th"></i>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results List -->
+        <div id="searchResults" class="search-results">
+            {% for result in results %}
+            <article class="result-item card mb-3 shadow-sm">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- Result Header -->
+                            <header class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-1">
+                                    <a href="{{ url_for('faculty_detail', faculty_id=result.id) }}" 
+                                       class="text-decoration-none">
+                                        {{ result.name or 'Nama tidak tersedia' }}
+                                    </a>
+                                </h5>
+                                <div class="result-score">
+                                    <span class="badge bg-primary">
+                                        Score: {{ "%.1f"|format(result.score or 0) }}
+                                    </span>
+                                </div>
+                            </header>
+                            
+                            <!-- Result Meta -->
+                            <div class="result-meta mb-2">
+                                <span class="badge bg-{% if result.faculty_type == 'faculty' %}success{% else %}info{% endif %} me-2">
+                                    {{ result.faculty_type|title }}
+                                </span>
+                                <small class="text-muted">
+                                    <i class="fas fa-link me-1"></i>
+                                    <a href="{{ result.url }}" target="_blank" class="text-muted">
+                                        {{ result.url }}
+                                    </a>
+                                </small>
+                            </div>
+                            
+                            <!-- Result Description -->
+                            <p class="card-text">
+                                {% if result.description %}
+                                    {% if result.description|length > 200 %}
+                                        {{ result.description[:200] }}...
+                                    {% else %}
+                                        {{ result.description }}
+                                    {% endif %}
+                                {% else %}
+                                    Deskripsi tidak tersedia
+                                {% endif %}
+                            </p>
+                            
+                            <!-- Programs Preview -->
+                            {% if result.programs %}
+                            <div class="programs-preview mb-2">
+                                <small class="text-muted d-block mb-1">Program Studi:</small>
+                                {% for program in result.programs[:4] %}
+                                <span class="badge bg-light text-dark me-1">{{ program }}</span>
+                                {% endfor %}
+                                {% if result.programs|length > 4 %}
+                                <span class="text-muted small">+{{ result.programs|length - 4 }} lainnya</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Breadcrumb Preview -->
+                            {% if result.breadcrumb %}
+                            <div class="breadcrumb-preview">
+                                <small class="text-muted">
+                                    <i class="fas fa-route me-1"></i>
+                                    Jalur: {{ ' > '.join(result.breadcrumb) }}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <!-- Result Actions -->
+                            <div class="result-actions text-end">
+                                <a href="{{ url_for('faculty_detail', faculty_id=result.id) }}" 
+                                   class="btn btn-primary btn-sm mb-2">
+                                    <i class="fas fa-info-circle me-1"></i>Detail
+                                </a>
+                                {% if result.url %}
+                                <a href="{{ result.url }}" 
+                                   target="_blank" 
+                                   class="btn btn-outline-secondary btn-sm mb-2">
+                                    <i class="fas fa-external-link-alt me-1"></i>Kunjungi
+                                </a>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Contact Info -->
+                            {% if result.contact %}
+                            <div class="contact-info mt-3">
+                                <small class="text-muted d-block mb-1">Kontak:</small>
+                                {% if result.contact.get('email') %}
+                                <small class="d-block">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    <a href="mailto:{{ result.contact.email }}">
+                                        {{ result.contact.email }}
+                                    </a>
+                                </small>
+                                {% endif %}
+                                {% if result.contact.get('phone') %}
+                                <small class="d-block">
+                                    <i class="fas fa-phone me-1"></i>{{ result.contact.phone }}
+                                </small>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if total_pages and total_pages > 1 %}
+        <nav aria-label="Pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" 
+                       href="{{ url_for('search', q=query, page=page-1, type=filter_type, sort=sort_by) }}">
+                        <i class="fas fa-chevron-left"></i> Sebelumnya
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% set start_page = [1, page-2]|max %}
+                {% set end_page = [total_pages, page+2]|min %}
+                
+                {% for p in range(start_page, end_page + 1) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" 
+                       href="{{ url_for('search', q=query, page=p, type=filter_type, sort=sort_by) }}">
+                        {{ p }}
+                    </a>
+                </li>
+                {% endfor %}
+                
+                {% if page < total_pages %}
+                <li class="page-item">
+                    <a class="page-link" 
+                       href="{{ url_for('search', q=query, page=page+1, type=filter_type, sort=sort_by) }}">
+                        Selanjutnya <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </section>
+
+    {% else %}
+    <!-- No Results -->
+    <section class="no-results text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-search text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h3 class="text-muted mb-3">Tidak ada hasil ditemukan</h3>
+        <p class="text-muted mb-4">
+            Pencarian untuk "<strong>{{ query }}</strong>" tidak menemukan hasil yang sesuai.
+        </p>
+        
+        <div class="suggestions">
+            <h5 class="mb-3">Saran pencarian:</h5>
+            <ul class="list-unstyled">
+                {% set search_tips = [
+                    'Periksa ejaan kata kunci',
+                    'Gunakan kata kunci yang lebih umum',
+                    'Coba gunakan sinonim atau kata alternatif',
+                    'Kurangi jumlah kata kunci'
+                ] %}
+                {% for tip in search_tips %}
+                <li>• {{ tip }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ url_for('search') }}" class="btn btn-primary">
+                <i class="fas fa-search me-2"></i>Coba Pencarian Lain
+            </a>
+        </div>
+    </section>
+    {% endif %}
+{% endif %}
+
+<!-- Search Tips -->
+{% if not query or not results %}
+<section class="search-tips bg-light rounded-3 p-4 mt-4">
+    <h5 class="mb-3">
+        <i class="fas fa-lightbulb me-2 text-warning"></i>
+        Tips Pencarian
+    </h5>
+    <div class="row">
+        <div class="col-md-6">
+            <ul class="list-unstyled">
+                {% set search_tips_left = [
+                    'Gunakan kata kunci spesifik seperti "Fakultas Teknik" atau "FASILKOM"',
+                    'Coba singkatan fakultas seperti "FEB", "FMIPA", "FIB"',
+                    'Gunakan nama program studi untuk hasil lebih akurat'
+                ] %}
+                {% for tip in search_tips_left %}
+                <li class="mb-2">
+                    <i class="fas fa-check text-success me-2"></i>
+                    {{ tip }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <ul class="list-unstyled">
+                {% set search_tips_right = [
+                    'Sistem menggunakan algoritma BFS untuk pencarian menyeluruh',
+                    'Hasil diurutkan berdasarkan relevansi dan scoring',
+                    'Data diperbarui secara berkala dari website resmi UI'
+                ] %}
+                {% for tip in search_tips_right %}
+                <li class="mb-2">
+                    <i class="fas fa-info text-info me-2"></i>
+                    {{ tip }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSearchPage();
+});
+
+function initializeSearchPage() {
+    initializeSearchSuggestions();
+    initializeViewToggle();
+    initializeFormAutoSubmit();
+    initializeSearchHighlighting();
+}
+
+function initializeSearchSuggestions() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+    
+    let suggestionTimeout;
+    
+    searchInput.addEventListener('input', function() {
+        clearTimeout(suggestionTimeout);
+        const query = this.value.trim();
+        
+        if (query.length < 2) return;
+        
+        suggestionTimeout = setTimeout(() => {
+            fetchSearchSuggestions(query);
+        }, 300);
+    });
+}
+
+function fetchSearchSuggestions(query) {
+    // Placeholder for suggestion fetching logic
+    console.log('Fetching suggestions for:', query);
+    // TODO: Implement actual suggestion fetching
+}
+
+function initializeViewToggle() {
+    const listViewBtn = document.getElementById('listView');
+    const gridViewBtn = document.getElementById('gridView');
+    const searchResults = document.getElementById('searchResults');
+    
+    if (!listViewBtn || !gridViewBtn || !searchResults) return;
+    
+    listViewBtn.addEventListener('change', function() {
+        if (this.checked) {
+            toggleResultsView('list');
+        }
+    });
+    
+    gridViewBtn.addEventListener('change', function() {
+        if (this.checked) {
+            toggleResultsView('grid');
+        }
+    });
+}
+
+function toggleResultsView(viewType) {
+    const searchResults = document.getElementById('searchResults');
+    if (!searchResults) return;
+    
+    searchResults.classList.remove('grid-view', 'list-view');
+    searchResults.classList.add(`${viewType}-view`);
+}
+
+function initializeFormAutoSubmit() {
+    const filterSelects = document.querySelectorAll('select[name="type"], select[name="sort"]');
+    
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function(e) {
+            const form = this.closest('form');
+            if (form) {
+                form.submit();
+            }
+        });
+    });
+}
+
+function initializeSearchHighlighting() {
+    const query = '{{ query|safe }}';
+    if (query) {
+        highlightSearchTerms(query);
+    }
+}
+
+function highlightSearchTerms(query) {
+    const terms = query.toLowerCase()
+        .split(' ')
+        .filter(term => term.length > 2);
+    
+    if (terms.length === 0) return;
+    
+    const resultItems = document.querySelectorAll('.result-item');
+    
+    resultItems.forEach(item => {
+        const textElements = item.querySelectorAll('.card-title, .card-text');
+        
+        textElements.forEach(element => {
+            let html = element.innerHTML;
+            
+            terms.forEach(term => {
+                const regex = new RegExp(`(${escapeRegex(term)})`, 'gi');
+                html = html.replace(regex, '<mark>$1</mark>');
+            });
+            
+            element.innerHTML = html;
+        });
+    });
+}
+
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+</script>
+{% endblock %}
