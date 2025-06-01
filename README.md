@@ -29,8 +29,8 @@ ui_faculty-finder/
 │   ├── indexer.py           # Indexing untuk pencarian
 │   └── search_engine.py     # Logic pencarian data
 ├── data/                     # Folder Database
-│   └── ui_faculty.db        # Database SQLite
-└── README.md                 # Dokumentasi proyek
+    └── ui_faculty.db        # Database SQLite
+
 ```
 
 ---
@@ -190,28 +190,3 @@ taskkill /PID <PID_NUMBER> /F
 - **Memory Usage**: ~100-200MB during operation
 
 ---
-
-## 📞 Support dan Kontribusi
-
-### Reporting Issues
-Laporkan bug atau request fitur melalui:
-- GitHub Issues (jika tersedia)
-- Email developer
-- Dokumentasi internal
-
-### Development
-Untuk berkontribusi pada pengembangan:
-1. Fork repository
-2. Create feature branch
-3. Commit changes
-4. Submit pull request
-
----
-
-## 📄 Lisensi dan Disclaimer
-
-Aplikasi ini dikembangkan untuk keperluan akademis dan penelitian. Penggunaan data dosen harus sesuai dengan ketentuan dan privasi yang berlaku di Universitas Indonesia.
-
-**Version**: 1.0.0  
-**Last Updated**: Juni 2025  
-**Compatibility**: Python 3.7+, All major web browsers
