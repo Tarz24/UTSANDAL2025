@@ -2,12 +2,12 @@
 
 ## 🔍 Overview
 
-**UI Faculty Finder** adalah aplikasi web berbasis Python yang dirancang untuk melakukan crawling, penyimpanan, dan pencarian data dosen Universitas Indonesia secara otomatis dan interaktif.
+**UI Faculty Finder** adalah aplikasi web berbasis Python yang dirancang untuk melakukan crawling, penyimpanan, dan pencarian data fakultas Universitas Indonesia secara otomatis dan interaktif.
 
 ### Fitur Utama
-- **Web Crawling Otomatis**: Menggunakan algoritma BFS (Breadth-First Search) untuk mengumpulkan data dosen
+- **Web Crawling Otomatis**: Menggunakan algoritma BFS (Breadth-First Search) untuk mengumpulkan data fakultas
 - **Database Management**: Penyimpanan data terstruktur menggunakan SQLite
-- **Search Engine**: Antarmuka web interaktif untuk pencarian data dosen
+- **Search Engine**: Antarmuka web interaktif untuk pencarian data fakultas
 - **Real-time Access**: Akses langsung melalui web browser
 
 ---
@@ -83,7 +83,7 @@ python app.py
 
 #### Phase 1: Data Crawling
 - Sistem akan memulai proses crawling menggunakan algoritma BFS
-- Mengumpulkan data dosen dari website resmi Universitas Indonesia
+- Mengumpulkan data fakultas dari website resmi Universitas Indonesia
 - Progress akan ditampilkan di terminal
 
 #### Phase 2: Database Operations
@@ -113,14 +113,14 @@ http://localhost:5000
 ## 🌐 Menggunakan Web Interface
 
 ### Fitur Pencarian
-1. **Search Bar**: Masukkan nama dosen yang ingin dicari
+1. **Search Bar**: Masukkan nama fakultas yang ingin dicari
 2. **Filter Options**: Gunakan filter berdasarkan fakultas atau departemen
 3. **Real-time Results**: Hasil pencarian muncul secara real-time
-4. **Detail View**: Klik pada hasil untuk melihat informasi lengkap dosen
+4. **Detail View**: Klik pada hasil untuk melihat informasi lengkap fakultas
 
 ### Navigasi Web
 - **Home**: Halaman utama pencarian
-- **Browse**: Jelajahi semua data dosen
+- **Browse**: Jelajahi semua data fakultas
 - **About**: Informasi tentang aplikasi
 - **Statistics**: Statistik data yang tersimpan
 
@@ -136,7 +136,7 @@ if __name__ == '__main__':
 ```
 
 ### Update Database
-Untuk memperbarui data dosen:
+Untuk memperbarui data fakultas:
 ```bash
 # Hapus database lama (opsional)
 rm data/ui_faculty.db
