@@ -24,12 +24,24 @@ ui_faculty-finder/
 │   └── url_utils.py         # Utility untuk URL processing
 ├── database/                 # Modul Database
 │   ├── database.py          # Koneksi dan operasi SQLite
-│   └── models.py            # Data models untuk dosen
+│   └── models.py            # Data models untuk fakultas
 ├── search/                   # Modul Search Engine
 │   ├── indexer.py           # Indexing untuk pencarian
 │   └── search_engine.py     # Logic pencarian data
-└── data/                     # Folder Database
-    └── ui_faculty.db        # Database SQLite
+├── data/                     # Folder Database
+│   └── ui_faculty.db        # Database SQLite
+├── static/				# Modul css dan js
+│   ├── css/	
+│   │	  └── style.css				
+│   └── js/
+│	  └── main.js		
+└── templates/			# Modul tampilan web	
+    ├── base.html
+    ├── index.html
+    ├── faculty.html
+    ├── search.html
+    └── 404.html
+
 
 ```
 
