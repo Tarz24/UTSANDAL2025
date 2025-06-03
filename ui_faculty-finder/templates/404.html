@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Halaman Tidak Ditemukan - UI Faculty Finder{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Beranda</a></li>
+            <li class="breadcrumb-item active">404 - Halaman Tidak Ditemukan</li>
+        </ol>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<!-- Error Section -->
+<div class="error-section text-center py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Error Icon -->
+                <div class="error-icon mb-4">
+                    <i class="fas fa-search text-muted" style="font-size: 6rem;"></i>
+                </div>
+                
+                <!-- Error Code -->
+                <h1 class="display-1 fw-bold text-primary mb-3">404</h1>
+                
+                <!-- Error Title -->
+                <h2 class="fw-bold mb-3">Halaman Tidak Ditemukan</h2>
+                
+                <!-- Error Description -->
+                <p class="lead text-muted mb-4">
+                    Maaf, halaman yang Anda cari tidak dapat ditemukan atau mungkin telah dipindahkan.
+                    Silakan gunakan menu navigasi atau pencarian untuk menemukan informasi yang Anda butuhkan.
+                </p>
+                
+                <!-- Action Buttons -->
+                <div class="error-actions mb-5">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-home me-2"></i>Kembali ke Beranda
+                    </a>
+                    <a href="{{ url_for('search') }}" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-search me-2"></i>Cari Fakultas
+                    </a>
+                </div>
+                
+                <!-- Quick Search -->
+                <div class="quick-search-404">
+                    <h5 class="mb-3">Atau cari langsung dari sini:</h5>
+                    <form method="GET" action="{{ url_for('search') }}" class="mb-4">
+                        <div class="row justify-content-center">
+                            <div class="col-md-6">
+                                <div class="input-group input-group-lg">
+                                    <input type="text" class="form-control shadow-sm" 
+                                           name="q" placeholder="Masukkan nama fakultas atau kata kunci..."
+                                           autocomplete="off">
+                                    <button class="btn btn-primary px-4" type="submit">
+                                        <i class="fas fa-search me-2"></i>Cari
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Popular Searches -->
+<div class="popular-searches bg-light rounded-3 p-4">
+    <div class="container">
+        <h5 class="text-center mb-3">
+            <i class="fas fa-fire me-2 text-warning"></i>
+            Pencarian Populer
+        </h5>
+        <div class="text-center">
+            <a href="{{ url_for('search', q='Fakultas Teknik') }}" class="btn btn-outline-primary btn-sm me-2 mb-2">Fakultas Teknik</a>
+            <a href="{{ url_for('search', q='Fakultas Kedokteran') }}" class="btn btn-outline-primary btn-sm me-2 mb-2">Fakultas Kedokteran</a>
+            <a href="{{ url_for('search', q='FASILKOM') }}" class="btn btn-outline-primary btn-sm me-2 mb-2">FASILKOM</a>
+            <a href="{{ url_for('search', q='FEB') }}" class="btn btn-outline-primary btn-sm me-2 mb-2">FEB</a>
+            <a href="{{ url_for('search', q='FMIPA') }}" class="btn btn-outline-primary btn-sm me-2 mb-2">FMIPA</a>
+            <a href="{{ url_for('search', q='Fakultas Hukum') }}" class="btn btn-outline-primary btn-sm me-2 mb-2">Fakultas Hukum</a>
+            <a href="{{ url_for('search', q='FIB') }}" class="btn btn-outline-primary btn-sm me-2 mb-2">FIB</a>
+            <a href="{{ url_for('search', q='Fakultas Psikologi') }}" class="btn btn-outline-primary btn-sm me-2 mb-2">Fakultas Psikologi</a>
+        </div>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="help-section mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon bg-primary text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h5>Kembali ke Beranda</h5>
+                    <p class="text-muted">
+                        Mulai dari halaman utama untuk menjelajahi semua fakultas UI
+                        dan fitur pencarian yang tersedia.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon bg-success text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h5>Gunakan Pencarian</h5>
+                    <p class="text-muted">
+                        Cari fakultas atau program studi dengan kata kunci
+                        menggunakan sistem pencarian BFS yang canggih.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card text-center p-4">
+                    <div class="feature-icon bg-info text-white rounded-circle mx-auto mb-3">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <h5>Jelajahi Fakultas</h5>
+                    <p class="text-muted">
+                        Temukan informasi lengkap tentang fakultas-fakultas
+                        dan program studi di Universitas Indonesia.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus on search input
+    const searchInput = document.querySelector('input[name="q"]');
+    if (searchInput) {
+        searchInput.focus();
+    }
+    
+    // Add some animation to the error icon
+    const errorIcon = document.querySelector('.error-icon i');
+    if (errorIcon) {
+        setTimeout(() => {
+            errorIcon.style.transform = 'scale(1.1)';
+            errorIcon.style.transition = 'transform 0.3s ease';
+            
+            setTimeout(() => {
+                errorIcon.style.transform = 'scale(1)';
+            }, 300);
+        }, 500);
+    }
+});
+</script>
+{% endblock %}
